@@ -1,0 +1,10 @@
+app/config/config.local.neon
+app/config/config.server.neon
+.idea
+.vscode
+bower_components
+node_modules
+/vendor
+www/upload/*/*
+www/dist
+.env
