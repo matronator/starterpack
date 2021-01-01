@@ -11,12 +11,16 @@ use App\Model,
 	Nette\Mail\Message,
 	Nette\Utils\Validators,
 	Nette\Utils\DateTime;
+use Nette\Security\Passwords;
 
 final class UserPresenter extends BasePresenter
 {
 	/** @var Model\UserRepository */
-	private $userModel;
+	private $userRepository;
 	private $authenticator;
+
+	/** @var Passwords */
+	private $passwords;
 
 	/**
 	 * @var \Nette\Mail\IMailer
@@ -24,10 +28,11 @@ final class UserPresenter extends BasePresenter
 	 */
 	public $mailer;
 
-	public function __construct(Model\UserRepository $users, Model\Authenticator $authenticator)
+	public function __construct(Model\UserRepository $users, Model\Authenticator $authenticator, Passwords $passwords)
 	{
-		$this->userModel = $users;
+		$this->userRepository = $users;
 		$this->authenticator = $authenticator;
+		$this->passwords = $passwords;
 	}
 
     protected function startup()
@@ -38,8 +43,8 @@ final class UserPresenter extends BasePresenter
 
 	public function renderDefault()
 	{
-		$this->template->data = $this->userModel->findAll();
-		$this->template->roles = $this->userModel->roles;
+		$this->template->data = $this->userRepository->findAll();
+		$this->template->roles = $this->userRepository->roles;
 	}
 
 	public function renderEdit(int $id = null)
@@ -47,7 +52,7 @@ final class UserPresenter extends BasePresenter
 		$form = $this['userForm'];
 		$this->template->id = $id;
 		if ($id) {
-			$user = $this->userModel->findAll()->get($id);
+			$user = $this->userRepository->findAll()->get($id);
 			if (!$user) {
 				$this->error('Entry not found!');
 			}
@@ -59,12 +64,12 @@ final class UserPresenter extends BasePresenter
 
 	public function actionDelete(int $id)
 	{
-		$user = $this->userModel->findAll()->get($id);
+		$user = $this->userRepository->findAll()->get($id);
 		if (!$user) {
 			$this->flashMessage('Entry not found!');
 		}else{
 			$this->flashMessage('Entry deleted!');
-			$this->userModel->findAll()->get($id)->delete();
+			$this->userRepository->findAll()->get($id)->delete();
 		}
 		$this->redirect('default');
 	}
@@ -93,7 +98,7 @@ final class UserPresenter extends BasePresenter
         $form->addPassword('passwordVerify', 'Password again')
 			    ->addRule(Form::EQUAL, 'Passwords do not match', $form['password'])
                 ->setRequired(true);
-        $form->addSelect('group', 'Group', array(
+        $form->addSelect('role', 'Group', array(
 					            'u' => 'User',
 					            'a' => 'Admin',
 					        )
@@ -119,19 +124,19 @@ final class UserPresenter extends BasePresenter
 		if ($id) {
 			// edit user
             if($values->password!=$values->passwordVerify){
-                $form->addError('Passwords do not match.', 'error');
+                $this->flashMessage('Passwords do not match.', 'warning');
             }
             else if($values->password=='' && $values->passwordVerify==''){
                 unset($values->password);
                 unset($values->passwordVerify);
-                $this->userModel->findAll()->get($id)->update($values);
+                $this->userRepository->findAll()->get($id)->update($values);
                 $this->flashMessage('Update successful.');
             }
             else if($values->password==$values->passwordVerify){
-                $values->password = Security\Passwords::hash($values->password);
+				$values->password = $this->passwords->hash($values->password);
                 unset($values->passwordVerify);
 
-                $this->userModel->findAll()->get($id)->update($values);
+                $this->userRepository->findAll()->get($id)->update($values);
                 $this->flashMessage('Update successful.');
             }
 
@@ -139,13 +144,13 @@ final class UserPresenter extends BasePresenter
 		} else {
 			//add user
 			if($values->password!=$values->passwordVerify){
-				$form->addError('Passwords do not match.', 'error');
+				$this->flashMessage('Passwords do not match.', 'warning');
 			}else{
-				$values->password = Security\Passwords::hash($values->password);
+				$values->password = $this->passwords->hash($values->password);
 				unset($values->passwordVerify);
 				$values->registration = new DateTime();
 
-				$this->userModel->findAll()->insert($values);
+				$this->userRepository->findAll()->insert($values);
 				$this->flashMessage('Record successfully crated.');
 			}
 

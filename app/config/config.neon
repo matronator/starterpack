@@ -21,6 +21,7 @@ services:
 	- App\Model\Authenticator
 	- App\Model\ArticlesRepository
 	- App\Model\ContactFormRepository
+	- App\Model\GalleryRepository
 	- App\Model\PagesRepository
 	- App\Model\UserRepository
 	- App\Filter\ImageFilter

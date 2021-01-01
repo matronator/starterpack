@@ -1,6 +1,10 @@
 :root {
   --width-aside: 240px;
   --height-header: 80px;
+
+  --color-1: #117fcb;
+  --color-2: #db7343;
+  --color-3: #6c757d;
 }
 
 /* breakpoints (inherited from UI kit) */

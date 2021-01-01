@@ -18,11 +18,17 @@
 	<meta name="msapplication-config" content="{$basePath}/dist/admin/images/browserconfig.xml">
 	<meta name="theme-color" content="#333333">
 	<link rel="stylesheet" href="{asset index.css admin}">
-	<script src="{asset index.js admin}"></script>
+
+	<script src="{$basePath}/ckeditor5/build/ckeditor.js"></script>
 	{block head}{/block}
 </head>
 <body class="l-body">
-{include body}
-{block scripts}{/block}
+    {include body}
+
+	<script defer src="{$basePath}/ckeditor5/build/editorSettings.js"></script>
+	<script defer src="{asset index.js admin}"></script>
+    {ifset #scripts}
+		{block scripts}{/block}
+	{/ifset}
 </body>
 </html>

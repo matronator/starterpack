@@ -10,10 +10,10 @@ use Nette\Utils\DateTime;
 
 class Authenticator implements Security\IAuthenticator
 {
-    /** @var Nette\Database\Context */
+    /** @var Nette\Database\Explorer */
     private $database;
 
-    public function __construct(Nette\Database\Context $database)
+    public function __construct(Nette\Database\Explorer $database)
     {
         $this->database = $database;
     }
@@ -37,7 +37,7 @@ class Authenticator implements Security\IAuthenticator
             ->wherePrimary($row->id)
             ->update([
                 'ip' => $_SERVER["REMOTE_ADDR"],
-                'date_log' => new DateTime(),
+                'last_log' => new DateTime(),
             ]);
         return new Security\Identity($row->id, $row->role, $row);
     }

@@ -10,22 +10,23 @@ use App\Model,
     Nette\Application\UI\Form,
     Nette\Utils\Image,
     Nette\Utils\DateTime;
+use Tracy\Debugger;
 
 /////////////////////// ADMIN: ARTICLES PRESENTER ///////////////////////
 
 final class ArticlePresenter extends BasePresenter
 {
 	/** @var Model\ArticlesRepository */
-	private $articles;
+	private $articleRepository;
 
 	/** @var \ImageStorage */
 	public $imageStorage;
 
 	public function __construct(
-		Model\ArticlesRepository $articles,
+		Model\ArticlesRepository $articleRepository,
 		\ImageStorage $storage
 	){
-		$this->articles = $articles;
+		$this->articleRepository = $articleRepository;
 		$this->imageStorage = $storage;
 	}
 
@@ -37,77 +38,72 @@ final class ArticlePresenter extends BasePresenter
 	/*********************** RENDER VIEWS ***********************/
 	public function renderDefault()
 	{
-		$articles = $this->articles->findAll()->select('*')->order('date DESC')->fetchAll();
-        $data = [];
-        foreach ($articles as $article) {
-            $data[$article->id] = [
-                'common' => $article,
-                'translation' => $this->articles->findAllTranslations()->where('article_id', $article->id)->where('locale', $this->defaultLocale)->fetch()
-            ];
-        }
-
-        $this->template->data = $data;
+        $this->template->data = $this->articleRepository->findAllWithTranslation($this->defaultLocale);
 	}
 
 
-	public function renderEdit(int $id)
+	public function renderEdit(int $id = null)
     {
         $form = $this['articleForm'];
+        if ($id) {
+            $translation = $this->articleRepository->findArticleTranslation($this->defaultLocale, $id)->fetch();
+            $articles = $this->articleRepository->findArticleTranslation($this->defaultLocale, $id)->get($translation->id);
 
-        $row = $this->articles->findAll()->wherePrimary($id)->fetch();
+            $data = array_map(function ($item) {
+                return $item;
+            }, $articles->toArray());
+            $data['date'] = $articles->article->date;
+            $data['visible'] = $articles->article->visible;
+            $data['image_top'] = $articles->article->image_top;
+            $data['image_bottom'] = $articles->article->image_bottom;
 
-        if ($row) {
-            $defaults = [];
-            $defaults['date'] = $row->date->format('d.m.Y H:i:s');
+            $this->template->articleDir = $data['htaccess'];
+            if (isset($data['image_top']) && $data['image_top'] != null) {
+				$this->template->mainImageName = $data['image_top'];
+			}
+            if (isset($data['image_bottom']) && $data['image_bottom'] != null) {
+				$this->template->bottomImageName = $data['image_bottom'];
+			}
+            $this->template->articleMedia = $this->articleRepository->findArticleImages($id)->fetchAll();
+            $this->template->id = $id;
+        } else {
+            $data = [];
+            $data['date'] = new DateTime();
+            $data['visible'] = 1;
 
-            $translations = $this->articles->findArticleTranslations($id)->fetchAll();
-
-            foreach ($translations as $translation) {
-                $defaults['title_'.$translation->locale] = $translation->title;
-                $defaults['htaccess_'.$translation->locale] = $translation->htaccess;
-                $defaults['perex_'.$translation->locale] = $translation->perex;
-                $defaults['text_'.$translation->locale] = $translation->text;
-            }
-
-            foreach ($this->localeList as $locale) {
-                $tags = $this->articles->findAllTags()->select('title')->where('article_id', $id)->where('locale', $locale)->fetchAssoc('title');
-                $defaults['tags_'.$locale] = implode(',', array_keys($tags));
-            }
-
-            $form->setDefaults($defaults);
-            $this->template->row = $row;
-            $this->template->dir = $this->articles->uploadDir;
-            $this->template->image = $row['image'];
-            // $this->template->gallery = $this->articles->findAllImages()->where('article_id', $id)->fetchAll();
+            $this->template->articleMedia = [];
         }
-
-        $this->template->id = $id;
+        $form->setDefaults($data);
     }
 
-	/*********************** ACTIONS ***********************/
+    /*********************** ACTIONS ***********************/
 
 	public function actionDelete(int $id)
     {
-        $row = $this->articles->findAll()->get($id);
-        $translations = $this->articles->findArticleTranslations($id);
-        $photos = $this->articles->findAllImages()->where('article_id', $id);
+        $row = $this->articleRepository->findAll()->get($id);
+        $translation = $this->articleRepository->findArticleTranslation($this->defaultLocale, $id)->fetch();
+        // $photos = $this->articleRepository->findAllImages()->where('article_id', $id);
 
         if (!$row) {
             $this->flashMessage('Záznam nenalezen!');
         } else {
 
-			if($row->image) {
-				$this->imageStorage->delete($row->image, $this->articles->uploadDir);
+			if ($row->image_top) {
+				$this->imageStorage->delete($row->image_top, $this->articleRepository->uploadDir, $translation->htaccess);
+			}
+			if ($row->image_bottom) {
+				$this->imageStorage->delete($row->image_bottom, $this->articleRepository->uploadDir, $translation->htaccess);
 			}
 
+            $photos = $this->articleRepository->findArticleImages($id)->fetchAll();
 			foreach ($photos as $photo) {
-				$this->imageStorage->delete($photo, $this->articles->uploadDir);
-				$this->articles->findAllImages()->where('article_id', $photo)->delete();
-			}
+                $this->imageStorage->delete($photo->filename, $this->articleRepository->uploadDir, $translation->htaccess);
+            }
+            $this->articleRepository->findArticleImages($id)->delete();
 
-            $this->articles->findArticleTranslations($id)->delete();
-            $this->articles->findAllTags()->where('article_id', $id)->delete();
-            $this->articles->findAll()->where('id', $id)->delete();
+            $this->articleRepository->findArticleTranslation($this->defaultLocale, $id)->delete();
+            // $this->articleRepository->findAllTags()->where('article_id', $id)->delete();
+            $this->articleRepository->findAll()->where('id', $id)->delete();
 
             $this->flashMessage('Záznam úspěšně smazán!');
         }
@@ -115,26 +111,27 @@ final class ArticlePresenter extends BasePresenter
         $this->redirect('default');
     }
 
-	public function actionDeletePhoto(int $id)
+	public function actionDeleteImage(int $id)
 	{
-		$row = $this->articles->findAllImages()->get($id);
+		$row = $this->articleRepository->findAllImages()->get($id);
 
 		if (!$row) {
 			$this->flashMessage('Záznam nenalezen!');
+			$this->redirect('default');
 		} else {
-			$this->flashMessage('Záznam úspěšně smazán!');
-			$this->articles->findAllImages()->wherePrimary($id)->delete();
-			$this->imageStorage->delete($row->filename, $this->articles->uploadDir);
+            $article = $row->ref('article', 'article_id');
+            $translation = $this->articleRepository->findArticleTranslation($this->defaultLocale, $article->id)->fetch();
+			$this->articleRepository->findAllImages()->wherePrimary($id)->delete();
+			$this->imageStorage->delete($row->filename, $this->articleRepository->uploadDir, $translation->htaccess);
+			$this->flashMessage('Obrázek úspěšně smazán!');
+			$this->redirect('edit', $article->id);
 		}
-
-		$this->redirect('default');
 	}
 
-	public function handleShow(int $id, bool $visible)
+	public function actionShow(int $id, bool $visible)
     {
-        $this->articles->findAll()->where('id', $id)->update(['visible' => !$visible]);
+        $this->articleRepository->findAll()->where('id', $id)->update(['visible' => $visible]);
     }
-
 
 	/*********************** COMPONENT FACTORIES ***********************/
 	/**
@@ -145,24 +142,39 @@ final class ArticlePresenter extends BasePresenter
     {
         $form = new Form;
 
-        foreach ( $this->localeList as $lang ) {
+        $form->addText('title', 'Název *')
+            ->setHtmlAttribute('class', 'uk-input')
+            ->setRequired('Článek musí mít název.');
 
-            $form->addText('title_'.$lang, $lang.': Název');
-            $form->addText('htaccess_'.$lang, $lang.': URL');
-            $form->addTextArea('perex_'.$lang, $lang.': Perex')
-                ->setAttribute('class', 'ckeditor');
-            $form->addTextarea('text_'.$lang, $lang.': Text')
-                ->setAttribute('class', 'ckeditor');
+        $form->addText('htaccess', 'URL')
+            ->setHtmlAttribute('class', 'uk-input');
 
-            $form->addText('tags_'.$lang, $lang.': Štítky');
-        }
+        $form->addCheckbox('visible', ' Zobrazit článek?')
+			->setHtmlAttribute('class', 'uk-checkbox');
+
+        $form->addTextArea('perex', 'Perex')
+            ->setHtmlAttribute('class', 'js-wysiwyg');
+
+        $form->addTextarea('text', 'Text *')
+            ->setHtmlAttribute('class', 'js-wysiwyg')
+            ->setRequired('Článek musí obsahovat text.');
+
+        // $form->addText('tags', 'Štítky');
 
         $form->addText('date', 'Datum')
-            ->setDefaultValue(date('d.m.Y H:i:00'));
+            ->setHtmlAttribute('class', 'js-date uk-input');
 
-        $form->addUpload('image', 'Obrázek');
+        $form->addUpload('image_top', 'Úvodní obrázek')
+            ->addRule($form::IMAGE, 'Soubor musí být obrázek typu JPEG, PNG, GIF, nebo WebP.');
 
-        $form->addMultiUpload('files', 'Soubory:');
+        $form->addUpload('image_bottom', 'Obrázek pod článkem')
+            ->addRule($form::IMAGE, 'Soubor musí být obrázek typu JPEG, PNG, GIF, nebo WebP.');
+
+        $form->addHidden('clear_top_image', 'false');
+        $form->addHidden('clear_bottom_image', 'false');
+
+        $form->addMultiUpload('files', 'Galerie')
+			->addRule($form::IMAGE, 'Soubory musí být obrázky typu JPEG, PNG, GIF, nebo WebP.');
 
         $form->addSubmit('save', 'Uložit');
         $form->onSuccess[] = [$this, 'articleFormSucceeded'];
@@ -177,70 +189,98 @@ final class ArticlePresenter extends BasePresenter
         // Insert primary record
         $primaryData = [];
 
+        // $primaryData['title'] = $values->title;
+        // $primaryData['htaccess'] = $values->htaccess ? $values->htaccess : Strings::webalize($values->title);
+        $htaccess = Strings::webalize($values->title);
 
-        if( empty( trim($values->{'title_' . $this->defaultLocale})) ) { // default language title is not set
-            foreach ($this->localeList as $lang) {
-                if ( trim($values->{'title_' . $lang}) ) {
-                    $title = $values->{'title_' . $lang};
-                    break;
-                }
-            }
-        } else {
-            $title = $values->{'title_' . $this->defaultLocale};
-        }
-
-        if( !isset($title) ) {
-            $this->flashMessage('Nevložili jste titulek článku. Data nemohla být uložena.');
-            $this->redirect('default');
-        }
+        // if( !isset($title) ) {
+        //     $this->flashMessage('Nevložili jste titulek článku. Data nemohla být uložena.');
+        //     $this->redirect('default');
+        // }
 
         // Set htaccess & date
-        $primaryData['date'] = DateTime::createFromFormat('d.m.Y H:i:s', $values->date);
+        $primaryData['date'] = $values->date ? $values->date : new DateTime();
+        $primaryData['user_id'] = $this->user->getIdentity()->id;
 
         // Upload image
-        if ($values->image->isOk()) { // There is no error, the file uploaded with success
-            $primaryData['image'] = $this->imageStorage->saveFile($values->image, $this->articles->uploadDir); //upload
+        if (isset($values->image_top) && $values->clear_top_image !== 'true') {
+            if ($values->image_top->isOk()) { // There is no error, the file uploaded with success
+                $imageTopInsert = $this->imageStorage->saveImg($values->image_top, $this->articleRepository->uploadDir, $htaccess);
+            }
         }
+        if (isset($values->image_bottom) && $values->clear_bottom_image !== 'true') {
+            if ($values->image_bottom->isOk()) { // There is no error, the file uploaded with success
+                $imageBottomInsert = $this->imageStorage->saveImg($values->image_bottom, $this->articleRepository->uploadDir, $htaccess);
+            }
+        }
+
+        $savedPhotos = $this->imageStorage->saveGallery($values->files, $this->articleRepository->uploadDir, $htaccess);
+		unset($values->files);
 
         // Insert / update primary data
         if ($id > 0) {
-            $primaryData['updated_at'] = new DateTime();
-            $this->articles->findAll()->wherePrimary($id)->update($primaryData);
-            $this->articles->findArticleTranslations($id)->delete();
-            $this->articles->findAllTags()->where('article_id', $id)->delete();
+            $row = $this->articleRepository->findAll()->get($id);
+
+            $primaryData['date_updated'] = new DateTime();
+            $primaryData['date_created'] = $row->date_created;
+            if (isset($values->clear_top_image) && $values->clear_top_image === 'true') {
+                $primaryData['image_top'] = NULL;
+                $this->imageStorage->delete($row->image_top, $this->articleRepository->uploadDir, $htaccess);
+            } else {
+                $primaryData['image_top'] = isset($imageTopInsert) ? $imageTopInsert : $row->image_top;
+            }
+            if (isset($values->clear_bottom_image) && $values->clear_bottom_image === 'true') {
+                $primaryData['image_bottom'] = NULL;
+                $this->imageStorage->delete($row->image_bottom, $this->articleRepository->uploadDir, $htaccess);
+            } else {
+                $primaryData['image_bottom'] = isset($imageBottomInsert) ? $imageBottomInsert : $row->image_bottom;
+            }
+
+            $row->update($primaryData);
+
+            $this->articleRepository->findArticleTranslations($id)->delete();
+            $this->articleRepository->saveArticleGallery($savedPhotos, $id);
+            // $this->articleRepository->findAllTags()->where('article_id', $id)->delete();
             $this->flashMessage('Záznam byl úspěšně upraven.');
             $articleId = $id;
         } else {
-            $primaryData['created_at'] = new DateTime();
-            $row = $this->articles->findAll()->insert($primaryData);
-            $this->flashMessage('Záznam byl úspěšně přidán.');
+            $primaryData['date_created'] = new DateTime();
+            $primaryData['image_top'] = isset($imageTopInsert) ? $imageTopInsert : NULL;
+            $primaryData['image_bottom'] = isset($imageBottomInsert) ? $imageBottomInsert : NULL;
+
+            $row = $this->articleRepository->findAll()->insert($primaryData);
             $articleId = $row->id;
+
+            $this->articleRepository->saveArticleGallery($savedPhotos, $articleId);
+
+            $this->flashMessage('Záznam byl úspěšně přidán.');
         }
 
         // Insert translations
-        foreach ( $this->localeList as $lang ) {
-            $this->articles->findAllTranslations()->insert([
+        foreach ( array($this->defaultLocale) as $lang ) {
+            $this->articleRepository->findAllTranslations()->insert([
                 'article_id' => $articleId,
                 'locale' => $lang,
-                'title' => $values->{'title_'.$lang},
-                'perex' => $values->{'perex_'.$lang},
-                'text' => $values->{'text_'.$lang},
-                'htaccess' => Strings::webalize($values->{'title_'.$lang}),
-                'updated_at' => new DateTime()
+                'title' => $values->title,
+                'perex' => $values->perex,
+                'text' => $values->text,
+                'htaccess' => $htaccess,
+                'date_created' => $primaryData['date_created'],
+                'date_updated' => new DateTime()
             ]);
 
             // Insert tags
-            $tags = explode(',', $values->{'tags_'.$lang});
-            foreach ($tags as $tag) {
-                if ($tag)
-                    $this->articles->findAllTags()->insert([
-                        'article_id' => $articleId,
-                        'locale' => $lang,
-                        'title' => trim($tag),
-                        'htaccess' => Strings::webalize($tag),
-                        'updated_at' => new DateTime()
-                    ]);
-            }
+            // $tags = explode(',', $values->{'tags_'.$lang});
+            // foreach ($tags as $tag) {
+            //     if ($tag)
+            //         $this->articleRepository->findAllTags()->insert([
+            //             'article_id' => $articleId,
+            //             'locale' => $lang,
+            //             'title' => trim($tag),
+            //             'htaccess' => Strings::webalize($tag),
+            //             'date_updated' => new DateTime()
+            //         ]);
+            // }
         }
 
 

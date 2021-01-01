@@ -21,6 +21,7 @@ class Authorizator
         $acl->addResource('Default');
         $acl->addResource('Page');
         $acl->addResource('Article');
+        $acl->addResource('Gallery');
         $acl->addResource('User');
 
         // rules

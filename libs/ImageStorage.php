@@ -12,16 +12,18 @@ class ImageStorage
 		$this->dir = $dir;
 	}
 
-	public function saveImg($file, string $subdir)
+	public function saveImg($file, string $subdir, ?string $gallery = null)
 	{
 		$fileName = $this->getRandomName($file->name);
+		$subdir = $gallery ? $subdir . '/' . $gallery . '/' : $subdir;
 		$imgUrl = $this->dir . $subdir . $fileName;
 		$file->move($imgUrl);
 		return $fileName;
 	}
 
-	public function saveFile($file, string $subdir)
+	public function saveFile($file, string $subdir, ?string $gallery = null)
 	{
+		$subdir = $gallery ? $subdir . '/' . $gallery . '/' : $subdir;
 		$ext = explode('.', $file->name);
 		$ext = '.'.$ext[count($ext)-1];
 		$fileNameNoExtension = preg_replace("/\.[^.]+$/", "", $file->name);
@@ -41,14 +43,16 @@ class ImageStorage
 	}
 
 	// delete image
-	public function delete(string $fileName, string $subdir)
+	public function delete(string $fileName, string $subdir, ?string $gallery = null)
 	{
+		$subdir = $gallery ? $subdir . '/' . $gallery . '/' : $subdir;
 		unlink($this->dir . $subdir . $fileName);
 	}
 
-	public function saveGallery(array $photos, string $subdir)
+	public function saveGallery(array $photos, string $subdir, ?string $gallery = null)
 	{
 		$savedPhotos = [];
+		$subdir = $gallery ? $subdir . '/' . $gallery . '/' : $subdir;
 
 		foreach($photos as $photo){
 			$fileName = $this->getRandomName($photo->name);

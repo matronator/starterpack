@@ -1,7 +1,6 @@
 import UIkit from "uikit"
 import Icons from "uikit/dist/js/uikit-icons"
 import NetteForms from "../../../vendor/nette/forms/src/assets/netteForms.js"
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic"
 import Choices from "choices.js"
 import flatpickr from "flatpickr"
 import { Czech } from "flatpickr/dist/l10n/cs"
@@ -11,6 +10,8 @@ import {
   choicesOptions
 } from "./imports/settings"
 import { toggle } from "./imports/helpers"
+import "./../../../app/modules/Admin/components/DropUpload/DropUpload"
+import "./imports/upload"
 
 // TODO: https://github.com/babel/babelify#why-arent-files-in-node_modules-being-transformed
 
@@ -21,11 +22,6 @@ UIkit.use(Icons)
 NetteForms.initOnLoad()
 
 document.addEventListener(`DOMContentLoaded`, () => {
-  // ckfinder
-  const fields = document.querySelectorAll(".js-wysiwyg")
-  fields.forEach(field => {
-    ClassicEditor.create(field).catch(err => console.error(err.stack))
-  })
 
   // sortable
   UIkit.util.on(
@@ -58,7 +54,13 @@ document.addEventListener(`DOMContentLoaded`, () => {
   multies.forEach(multi => new Choices(multi, choicesOptions(multi)))
 
   // date picker
-  flatpickr(`.js-date`, { locale: Czech })
+  flatpickr(`.js-date`, {
+    locale: Czech,
+    enableTime: true,
+    // dateFormat: "d. m. Y. H:i",
+    // eslint-disable-next-line camelcase
+    time_24hr: true
+  })
 
   // toggle logic
   const togglers = document.querySelectorAll(`[data-toggler]`)

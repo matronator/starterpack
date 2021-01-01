@@ -43,8 +43,8 @@ class ImageGenerator
 	public function getUrlThumb()
 	{
 		//distribution of the filename and extension
-		$url = explode('/', $this->url);
-		$url = explode('.', $url[count($url)-1]);
+		$imgPath = explode('/', $this->url);
+		$url = explode('.', $imgPath[count($imgPath) - 1]);
 
 		//create new filename
 		$filename = $url[0] . ($this->crop ? '-crop' : '') . '-' . (int)$this->w . '-' . (int)$this->h;
@@ -58,7 +58,8 @@ class ImageGenerator
 		if (array_key_exists(1, $urlExplode)) {
 			$sourcePathImage = $this->wwwDir.$urlExplode[1];
 		}
-		$returnUrl = ($_SERVER["REMOTE_ADDR"]=='127.0.0.1' || $_SERVER["REMOTE_ADDR"]=='::1' ? $urlExplode[0].'www'.$this->tempDir : $this->tempDir);
+		// $returnUrl = ($_SERVER["REMOTE_ADDR"]=='127.0.0.1' || $_SERVER["REMOTE_ADDR"]=='::1' ? $urlExplode[0].'www'.$this->tempDir : $this->tempDir);
+		$returnUrl = $this->tempDir;
 
 
 		if (strpos($this->url, 'www') == false) {

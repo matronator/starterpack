@@ -14,14 +14,14 @@ class ArticlesRepository
     /** @var string */
     private $defaultLocale;
 
-	/** @var Nette\Database\Context */
+	/** @var Nette\Database\Explorer */
 	private $database;
 
 	public $uploadDir = '/upload/articles/';
 
 	public function __construct(
         Translator $translator,
-        Nette\Database\Context $database
+        Nette\Database\Explorer $database
     )
 	{
         $this->translator = $translator;
@@ -45,51 +45,24 @@ class ArticlesRepository
         return $this->database->table('article_translation')->where('article_id', $articleId);
     }
 
-    public function findAllWithTranslation(string $lang, $tag = null, int $limit = 9999)
+    public function findAllTags()
     {
+        return $this->database->table('article_tag');
+    }
 
-        $articles = [];
+    public function findAllWithTranslation(string $lang = 'en')
+    {
+        return $this->findAllTranslations()->where('locale', $lang)->order('date_created DESC');
+    }
 
-        if ($tag) {
-            $articles = $this->findAllTags()->select('article_id')->where('htaccess', $tag)->group('article_id')->fetchAssoc('article_id');
-        }
+    public function findArticleTranslation(string $lang = 'en', $id = null)
+    {
+        return $this->findAllTranslations()->where('locale = ? && article_id = ?', $lang, $id)->order('date_created DESC');
+    }
 
-
-        if ( empty(array_keys($articles)) ) {
-
-            $data = $this->database->query('
-                SELECT article.*, article_translation.title, article_translation.perex, article_translation.locale
-                FROM article
-                LEFT JOIN article_translation
-                ON article_translation.article_id = article.id
-                WHERE (article_translation.locale = ?)
-                AND article.visible = 1
-                AND article_translation.title <> ""
-                GROUP BY article.id
-                ORDER BY article.date DESC
-                LIMIT ?
-            ', ($lang=='en' || $lang=='cs' ? $lang : $this->defaultLocale), $limit)->fetchAll();
-
-        } else {
-
-            $data = $this->database->query('
-                SELECT article.*, article_translation.title, article_translation.perex, article_translation.locale
-                FROM article
-                LEFT JOIN article_translation
-                ON article_translation.article_id = article.id
-                WHERE (article_translation.locale = ?
-                OR article_translation.locale = ?)
-                AND article.id IN (?)
-                AND article.visible = 1
-                AND article_translation.title <> ""
-                ORDER BY article.date DESC
-                LIMIT ?
-            ', $lang, $this->defaultLocale, array_keys($articles), $limit)->fetchAll();
-
-        }
-
-        return $data;
-
+	public function findArticleImages(int $articleId)
+    {
+        return $this->database->table('article_images')->where('article_id', $articleId);
     }
 
 	public function findAllImages()
@@ -97,11 +70,14 @@ class ArticlesRepository
 		return $this->database->table('article_images');
 	}
 
-	public function saveGallery(array $photos, int $id)
+	public function saveArticleGallery(array $photos, int $articleId)
 	{
 		foreach ($photos as $photo) {
-			$this->findAllImages()->insert(array('article_id' => $id, 'filename' => $photo));
+			$this->findAllImages()->insert([
+                'article_id' => $articleId,
+                'description' => $photo,
+				'filename' => $photo
+			]);
 		}
 	}
-
 }

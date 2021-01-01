@@ -7,11 +7,12 @@ use Nette;
 
 class UserRepository
 {
-    /** @var Nette\Database\Context */
+    /** @var Nette\Database\Explorer */
     private $database;
 
     public $roles = [
-        'a' => 'Administrátor',
+        'a' => 'Admin',
+        'u' => 'User'
     ];
 
     private $navItems = [
@@ -19,6 +20,11 @@ class UserRepository
             'presenter' => 'Article',
             'title' => 'Články',
             'icon' => ' file-text'
+        ],
+        [
+            'presenter' => 'Gallery',
+            'title' => 'Galerie',
+            'icon' => 'album'
         ],
         [
             'presenter' => 'Page',
@@ -32,7 +38,7 @@ class UserRepository
         ],
     ];
 
-    public function __construct(Nette\Database\Context $database)
+    public function __construct(Nette\Database\Explorer $database)
     {
         $this->database = $database;
     }
