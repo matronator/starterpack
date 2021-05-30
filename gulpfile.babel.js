@@ -1,4 +1,4 @@
-import { watch, series, parallel, src, dest } from "gulp" // gulp
+import { watch, series, parallel, src, dest, lastRun } from "gulp" // gulp
 import noop from "gulp-noop" // gulp
 import browserSync from "browser-sync" // gulp
 import cacheBuster from "gulp-rev" // gulp
@@ -6,15 +6,14 @@ import sourcemaps from "gulp-sourcemaps" // gulp
 import tap from "gulp-tap" // gulp
 import sprite from "gulp-svg-sprite" // gulp
 import imagemin from "gulp-imagemin" // gulp
+import cache from "gulp-cache"
 import postcss from "gulp-postcss" // css
 import postcssImport from "postcss-import" // css
-import postcssNesting from "postcss-nesting" // css
 import postcssNano from "cssnano" // css
 import postcssCustomMedia from "postcss-custom-media" // css
-import postcssCustomProperties from "postcss-custom-properties" // css
-import postcssCalc from "postcss-calc" // css
+import postcssNest from "postcss-nested" // css
 import postscssAutoprefixer from "autoprefixer" // css
-import postcssMixins from "postcss-mixins" // css
+import postcssTailwind from "tailwindcss" // css
 import browserify from "browserify" // js
 import buffer from "vinyl-buffer" // js
 import babelify from "babelify" // js
@@ -41,23 +40,23 @@ const server = browserSync.create()
 // create array of postcss processors (order is important)
 const cssProcessors = [
   postcssImport, // must be the first
-  postcssMixins, // https://github.com/postcss/postcss-mixins
-  postcssNesting, // https://github.com/postcss/postcss-nested
-  postcssCalc, // https://github.com/postcss/postcss-calc
-  postcssCustomMedia // https://drafts.csswg.org/mediaqueries-5/#custom-mq
-].concat(
-  isProduction
-    ? [
-        // enable additional processors on production (saves time on development)
-        // postcssCustomProperties, // https://www.w3.org/TR/css-variables-1/
-        postscssAutoprefixer, // uses browser list option from package.json
-        postcssNano
-      ]
-    : []
-)
+  postcssCustomMedia, // https://drafts.csswg.org/mediaqueries-5/#custom-mq
+  postcssNest,
+]
+  // add tailwind for front module
+  .concat(module === "front" ? [postcssTailwind] : [])
+  // enable additional processors on production (saves time on development)
+  .concat(
+    isProduction
+      ? [
+          postscssAutoprefixer, // uses browser list option from package.json
+          postcssNano,
+        ]
+      : []
+  )
 
 const config = {
-  serverUrl: `http://127.0.0.1:8000/`,
+  serverUrl: process.env.HOST || `http://127.0.0.1:8000/`,
   proxyPort: 3000,
   modules: [`front`, `admin`],
   buildDest: `www/dist/${module}/`,
@@ -65,26 +64,26 @@ const config = {
     entry: `dev/${module}/js/*.js`,
     watch: [
       `dev/${module}/js/**/*.js`,
-      `app/modules/${capitalize(module)}/**/*.js`
-    ]
+      `app/modules/${capitalize(module)}/**/*.js`,
+    ],
   },
   css: {
     entry: `dev/${module}/css/*.css`,
     watch: [
       `dev/${module}/css/**/*.css`,
-      `app/modules/${capitalize(module)}/**/*.css`
-    ]
+      `app/modules/${capitalize(module)}/**/*.css`,
+    ],
   },
   images: {
     entry: `dev/${module}/images/**`,
-    watch: [],
+    watch: [`dev/${module}/images/**`],
     directory: `images`,
-    quality: 95 // 0 - worst, 100 - best
+    quality: 70, // 0 - worst, 100 - best
   },
   etc: {
     entry: `dev/${module}/etc/**`,
     watch: [`dev/${module}/etc/**`],
-    directory: `etc`
+    directory: `etc`,
   },
   icons: {
     entry: `dev/${module}/icons/*.svg`,
@@ -95,22 +94,22 @@ const config = {
         symbol: {
           // generate right into the build folder
           dest: ``,
-          sprite: `sprite.svg`
-        }
-      }
-    }
+          sprite: `sprite.svg`,
+        },
+      },
+    },
   },
   templates: {
     watch: [
       `app/components/**/*.latte`,
-      `app/modules/${capitalize(module)}/**/*.latte`
-    ]
+      `app/modules/${capitalize(module)}/**/*.latte`,
+    ],
   },
   manifest: {
     base: `${process.cwd()}/www/dist/${module}/`,
     path: `${process.cwd()}/www/dist/${module}/asset-manifest.json`,
-    merge: true
-  }
+    merge: true,
+  },
 }
 
 /* Helpers */
@@ -131,23 +130,22 @@ async function serve() {
     proxy: config.serverUrl,
     port: config.proxyPort,
     open: true,
-    notify: false
+    notify: false,
   })
 }
 
 function clean(done) {
-  del([`${config.buildDest}/**/*`, `temp/cache/`])
-  done()
+  del([`${config.buildDest}/**/*`, `temp/cache/`]).then(() => done())
 }
 
 function js() {
   return src(config.js.entry, { read: false }) // no need of reading because browserify does
     .pipe(
-      tap(file => {
+      tap((file) => {
         // transform files using gulp-tap
         file.contents = browserify(file.path, {
           transform: [babelify, envify],
-          debug: isProduction // enable source maps on production
+          debug: isProduction, // enable source maps on production
         }).bundle()
       })
     )
@@ -191,15 +189,22 @@ function icons() {
 }
 
 function images() {
-  return src(config.images.entry)
+  return src(config.images.entry, {
+    since: lastRun(images),
+  })
     .pipe(
-      imagemin([
-        imagemin.mozjpeg({ progressive: true, quality: config.images.quality }),
-        imagemin.optipng({ optimizationLevel: 5 }),
-        imagemin.svgo({
-          plugins: [{ removeViewBox: true }, { cleanupIDs: false }]
-        })
-      ])
+      cache(
+        imagemin([
+          imagemin.mozjpeg({
+            progressive: true,
+            quality: config.images.quality,
+          }),
+          imagemin.optipng({ optimizationLevel: 5 }),
+          imagemin.svgo({
+            plugins: [{ removeViewBox: true }, { cleanupIDs: false }],
+          }),
+        ])
+      )
     )
     .pipe(dest(config.buildDest + config.images.directory))
 }
@@ -222,13 +227,19 @@ export async function createDevManifest() {
     acc[filename] = filename
     return acc
   }, {})
+  await util.promisify(fs.mkdir)(config.manifest.base, { recursive: true })
   await asyncWrite(config.manifest.path, JSON.stringify(manifest, null, 4))
+}
+
+export async function clearCache() {
+  await cache.clearAll()
 }
 
 function watchFiles() {
   watch(config.css.watch, series(css, reload))
   watch(config.js.watch, series(js, reload))
   watch(config.icons.watch, series(icons, reload))
+  watch(config.images.watch, series(images, reload))
   watch(config.templates.watch, series(reload))
 }
 

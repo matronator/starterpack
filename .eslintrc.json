@@ -7,19 +7,24 @@
     "prettier"
   ],
   "parserOptions": {
-    "ecmaVersion": 2018,
+    "ecmaVersion": 2021,
     "sourceType": "module"
   },
   "ignorePatterns": [
     "temp.js",
     "node_modules/",
     "polyfills.js",
-    "www/"
+    "www/",
+    "www/ckeditor5/"
   ],
   "env": {
     "browser": true,
-    "node": true
+    "node": true,
+    "es6": true
   },
+  "noInlineConfig": true,
+  "root": true,
+  "parser": "es6",
   "rules": {
     "no-var": [
       "error"
@@ -152,6 +157,9 @@
       "error"
     ],
     "comma-style": [
+      "error"
+    ],
+    "comma-dangle": [
       "error"
     ],
     "camelcase": [

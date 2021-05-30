@@ -63,7 +63,9 @@
 
     <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
 
-    {include pageContent}
+    <main class="container mx-auto text-center">
+        {include pageContent}
+    </main>
 
     <script n:syntax="off">
         grecaptcha.ready(function(){
