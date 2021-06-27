@@ -165,6 +165,6 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 INSERT INTO `user` (`id`, `email`, `username`, `password`, `firstname`, `lastname`, `ip`, `updated_at`, `created_at`, `role`) VALUES
-(1,	'info@matronator.com',	'',	'$2y$10$Vabm8gWuaRdOhkTPK6tzeuKfogaBANd4FNr5ou5iXuVLunLdZIIau',	'Matt',	'Ronator',	'127.0.0.1',	'2021-01-01 15:54:13',	'2021-01-01 00:00:00',	'a');
+(1,	'info@matronator.com',	'matronator',	'$2y$10$Vabm8gWuaRdOhkTPK6tzeuKfogaBANd4FNr5ou5iXuVLunLdZIIau',	'Matt',	'Ronator',	'127.0.0.1',	'2021-01-01 15:54:13',	'2021-01-01 00:00:00',	'a');
 
 -- 2021-01-01 14:54:56
