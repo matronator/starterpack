@@ -15,8 +15,8 @@ CREATE TABLE `article` (
   `image_top` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `image_bottom` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `visible` tinyint NOT NULL DEFAULT '1',
-  `date_created` datetime DEFAULT NULL,
-  `date_updated` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `user_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `updated_by` (`user_id`),
@@ -56,8 +56,8 @@ CREATE TABLE `article_translation` (
   `perex` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci,
   `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci,
   `htaccess` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `date_created` datetime DEFAULT NULL,
-  `date_updated` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `article_id` (`article_id`),
   CONSTRAINT `article_translation_ibfk_1` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`) ON DELETE CASCADE
@@ -79,8 +79,8 @@ CREATE TABLE `gallery` (
   `htaccess` varchar(90) COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `date` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `date_created` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `date_updated` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `user_id` int DEFAULT NULL,
   `visible` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
@@ -144,26 +144,27 @@ CREATE TABLE `tags` (
   `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `htaccess` varchar(255) COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `date_created` datetime NOT NULL,
-  `date_updated` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 
 CREATE TABLE `user` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `firstname` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
-  `lastname` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `email` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `username` varchar(31) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `firstname` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `lastname` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
   `ip` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-  `last_log` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `registration` datetime NOT NULL,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `role` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'u',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
-INSERT INTO `user` (`id`, `password`, `firstname`, `lastname`, `email`, `ip`, `last_log`, `registration`, `role`) VALUES
-(1,	'$2y$10$Vabm8gWuaRdOhkTPK6tzeuKfogaBANd4FNr5ou5iXuVLunLdZIIau',	'Matt',	'Ronator',	'info@matronator.com',	'127.0.0.1',	'2021-01-01 15:54:13',	'2021-01-01 00:00:00',	'a');
+INSERT INTO `user` (`id`, `email`, `username`, `password`, `firstname`, `lastname`, `ip`, `updated_at`, `created_at`, `role`) VALUES
+(1,	'info@matronator.com',	'',	'$2y$10$Vabm8gWuaRdOhkTPK6tzeuKfogaBANd4FNr5ou5iXuVLunLdZIIau',	'Matt',	'Ronator',	'127.0.0.1',	'2021-01-01 15:54:13',	'2021-01-01 00:00:00',	'a');
 
 -- 2021-01-01 14:54:56
