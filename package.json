@@ -78,6 +78,7 @@
     "@babel/polyfill": "^7.12.1",
     "@ckeditor/ckeditor5-build-classic": "^16.0.0",
     "@ckeditor/ckeditor5-ckfinder": "^16.0.0",
+    "@tailwindcss/typography": "^0.4.1",
     "choices.js": "^9.0.1",
     "core-js": "^3.13.1",
     "flatpickr": "^4.6.9",

@@ -1,0 +1,44 @@
+{define bodyClass}page--home{/define}
+{define pageTitle}Article{/define}
+{define metaDescription}Article{/define}
+
+{block pageContent}
+
+<article class="container mx-auto">
+    <div class="flex flex-col items-center justify-center">
+        <div class="container-md">
+            <h1>{$article->title}</h1>
+            <hr>
+            {ifset $article->article->image_top}
+                {capture $imageTop}{$basePath}/upload/articles/{$article->htaccess}/{$article->article->image_top}{/capture}
+                <img src="{$imageTop}">
+            {/ifset}
+            <div class="mx-auto prose">
+                {$presenter->youtubeIframe($article->text)|noescape}
+            </div>
+            {ifset $article->article->image_bottom}
+                {capture $imageBottom}{$basePath}/upload/articles/{$article->htaccess}/{$article->article->image_bottom}{/capture}
+                <img src="{$imageBottom}">
+            {/ifset}
+        </div>
+        <div class="container-sm" n:if="$articleMedia != []">
+            <hr>
+            <h2 class="sub-1">Gallery</h2>
+            <div class="grid grid-flow-col">
+                <div class="col-span-1" n:foreach="$articleMedia as $item">
+                    {capture $filePath}{$basePath}/upload/articles/{$article->htaccess}/{$item->filename}{/capture}
+                    <a href="{$filePath}">
+                        <img src="{$filePath|imageGenerator: true, 300, 300}">
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            {* <a href="<?php echo article_adjacent_url('next'); ?>">&lt; Další</a> *}
+            <a n:href="default" title="Back to articles">Back</a>
+            {* <a href="<?php echo article_adjacent_url('prev'); ?>">Předchozí &gt;</a> *}
+        </div>
+    </div>
+</article>
+
+{/block}

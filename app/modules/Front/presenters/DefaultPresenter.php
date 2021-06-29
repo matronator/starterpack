@@ -12,17 +12,30 @@ use App\Model;
 final class DefaultPresenter extends BasePresenter
 {
 	/** @var Model\ArticlesRepository */
-	private $articles;
+	private $articleRepository;
 
 	public function __construct(
-		Model\ArticlesRepository $articles
+		Model\ArticlesRepository $articleRepository
 	)
 	{
-		$this->articles = $articles;
+		$this->articleRepository = $articleRepository;
 	}
 
 	public function renderDefault()
 	{
-		$this->template->articles = $this->articles->findAll();
+		$this->template->articles = $this->articleRepository->findAllWithTranslation();
+	}
+
+	public function renderDetail(int $id = null, string $htaccess = null)
+	{
+		if (!$id || !$htaccess) {
+			$this->redirect('default');
+		}
+		$article = $this->articleRepository->findArticleTranslation('en', $id)->fetch();
+		if (!$article) {
+			$this->redirect('default');
+		}
+		$this->template->article = $article;
+		$this->template->articleMedia = $this->articleRepository->findArticleImages($article->article_id)->fetchAll();
 	}
 }

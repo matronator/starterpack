@@ -47,4 +47,10 @@ class BasePresenter extends \App\BaseModule\Presenters\BasePresenter
 		return $form;
 	}
 
+	public function youtubeIframe(string $input): string
+	{
+		$pattern = '/<oembed url=".+?(youtube\.com\/embed\/)(.+?)"><\/oembed>/';
+		return preg_replace($pattern, '<iframe class="yt-video" src="https://www.youtube.com/embed/$2" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>', $input);
+	}
+
 }

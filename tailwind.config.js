@@ -26,8 +26,8 @@ module.exports = {
       ],
       xs: ["12px", "22px"],
       sm: ["14px", "24px"],
-      base: ["16px", "28px"],
-      lead: ["22px", "42px"],
+      base: ["16px", "22px"],
+      lead: ["20px", "28px"],
       lg: ["28px", "40px"],
       xl: ["38px", "50px"],
       "2xl": ["48px", "60px"],
@@ -83,5 +83,7 @@ module.exports = {
     },
   },
   variants: {},
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }

@@ -3,6 +3,42 @@
 {define metaDescription}Homepage{/define}
 
 {block pageContent}
-<h1>default presenter | </h1>
-{* {control contactForm} *}
+<h1 class="mb-12 text-center">Homepage</h1>
+
+<article n:foreach="$articles as $item" class="container-sm mx-auto text-left">
+    <div class="mb-2 text-center bg-gray-500">
+        <a n:href="detail, $item->article->id, $item->htaccess">
+            {if isset($item->article->image_top)}
+                {capture $image}{$basePath}/upload/articles/{$item->htaccess}/{$item->article->image_top}{/capture}
+                <img src="{$image|imageGenerator: true, 640, 480}" alt="{$item->title}" class="article-thumb">
+            {elseif isset($item->article->image_bottom)}
+                {capture $image}{$basePath}/upload/articles/{$item->htaccess}/{$item->article->image_bottom}{/capture}
+                <img src="{$image|imageGenerator: true, 640, 480}" alt="{$item->title}" class="article-thumb">
+            {else}
+                <img src="{$basePath}/dist/front/images/tumblr_ob3ju9Vm3A1qamr8do2_r1_500.png" alt="{$item->title}" class="article-thumb">
+            {/if}
+        </a>
+    </div>
+    <div>
+        <h2 class="text-lg">
+            <a class="hover:text-gray-700 text-gray-800" n:href="detail, $item->article->id, $item->htaccess" title="{$item->title}">{$item->title}</a>
+        </h2>
+        {* <hr class="my-2"> *}
+        <p class="mb-2 italic text-gray-500">
+            <time>{$item->article->date|date:'d.m.Y H:i:s'}</time>
+        </p>
+        <div>
+            <p class="lead">
+                {$item->perex|stripHtml}
+            </p>
+            <p class="mt-2">
+                <a class="" n:href="detail, $item->article->id, $item->htaccess" title="{$item->title}">Full article</a>
+            </p>
+        </div>
+    </div>
+    {sep}
+        <hr class="my-8">
+    {/sep}
+</article>
+
 {/block}

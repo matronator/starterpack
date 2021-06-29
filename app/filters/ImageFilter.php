@@ -31,7 +31,7 @@ class ImageFilter
         $imageGenerator->setCropImage($crop);
         $imageGenerator->setWidth($w);
         $imageGenerator->setHeight($h);
-        $imageGenerator->setCropType($cropType);
+        $imageGenerator->setCropImage($cropType);
         return $imageGenerator->getUrlThumb();
     }
 }

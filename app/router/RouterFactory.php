@@ -26,12 +26,14 @@ final class RouterFactory
 		//--------------------- FRONT ROUTES ---------------------//
 		////////////////////////////////////////////////////////////
 		$router->withModule('Front')
+			// ARTICLES
+			->addRoute('[<locale=en cs|en>/]<presenter>/<action>[/<id>/<htaccess>]', 'Default:default')
 			// SITEMAP
 			->addRoute('sitemap.xml', 'Sitemap:default')
 			->addRoute('sitemap', 'Sitemap:default')
 
 			// MOST GENERAL ROUTE
-			->addRoute('<locale=cs cs|en>/<presenter>/<action>[/<slug>]', 'Default:default');
+			->addRoute('[<locale=en cs|en>/]<presenter>/<action>[/<slug>]', 'Default:default');
 
 		return $router;
 	}

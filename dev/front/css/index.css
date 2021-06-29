@@ -1,20 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind typography;
 
 /* Common styles */
 
 @layer base {
-    @import "common/variables.css";
-    @import "common/mixins.css";
+    /* @import "common/variables.css"; */
+    /* @import "common/mixins.css"; */
     @import "common/fonts.css";
-    @import "common/general.css";
+    /* @import "common/general.css"; */
     a {
-        @apply hover:underline;
+        @apply hover:underline text-blue-600 hover:text-blue-500 focus:text-blue-500;
     }
 
     p {
-        @apply font-sans text-base tracking-normal text-black;
+        @apply font-sans text-base tracking-normal;
     }
 
     h1 {
@@ -36,10 +37,11 @@
 }
 
 @layer components {
-    @import "common/buttons.css";
-    @import "common/flash.css";
-    @import "common/header.css";
-    @import "common/footer.css";
+    /* @import "common/buttons.css"; */
+    /* @import "common/flash.css"; */
+    /* @import "common/header.css"; */
+    /* @import "common/footer.css"; */
+
     .container-max {
         max-width: 1392px !important;
         @screen xl {
@@ -52,12 +54,12 @@
     }
 
     .container-md {
-        max-width: 1310px;
+        max-width: 1024px;
     }
     /* --------========≡≡≡≡≡--| TYPOGRAPHY |--≡≡≡≡≡========-------- */
 
     .lead {
-        @apply font-bold tracking-normal text-center text-lead;
+        @apply tracking-normal text-lead font-light mb-6;
     }
     .sub-1 {
         @apply text-lg font-bold tracking-normal;
@@ -80,9 +82,49 @@
     .label {
         @apply font-sans font-bold uppercase text-button;
     }
+
+    .article-thumb {
+        @apply object-cover w-full max-h-64;
+    }
 }
 
 @layer utilities {
+    .markdown {
+        @apply text-lg text-gray-900 leading-normal;
+        & > * + *,  & li + li, & li > p + p {
+            @apply mt-6;
+        }
+        & strong {
+            @apply text-black font-bold;
+        }
+        & a {
+            @apply text-black font-semibold;
+        }
+        & strong a {
+            @apply font-bold;
+        }
+        & h2 {
+            @apply leading-tight text-xl font-bold text-black mb-2 mt-10;
+        }
+        & h3 {
+            @apply leading-tight text-lg font-bold text-black mt-8 -mb-2;
+        }
+        & code {
+            @apply font-mono text-sm inline bg-gray-300 px-1;
+        }
+        & pre code {
+            @apply block bg-black p-4 rounded;
+        }
+        & blockquote {
+            @apply border-l-4 border-gray-400 pl-4 italic;
+        }
+        & ul, & ol {
+            @apply pl-5;
+            @screen sm {
+                @apply pl-10;
+            }
+        }
+    }
 }
 
 @screen xl {
