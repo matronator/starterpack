@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@tailwind typography;
 
 /* Common styles */
 
@@ -130,5 +129,12 @@
 @screen xl {
     .container {
         @apply px-0;
+    }
+}
+
+.prose a {
+    color: rgba(37, 99, 235, 1);
+    &:hover, &:focus, &:active {
+        color: rgba(59, 130, 246, 1);
     }
 }
