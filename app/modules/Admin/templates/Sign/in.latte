@@ -14,21 +14,25 @@
 								<img src="{$basePath}/dist/admin/images/logo.png" alt="matronator CMS logo" uk-image>
 							</div>
 
+							<p class="uk-alert uk-alert-warning uk-text-center">This is a DEMO</p>
+
 							{form signInForm}
 
 								<div class="uk-margin">
-									<div class="uk-inline uk-width-1-1">
+									<div class="uk-inline uk-width-1-1" uk-tooltip="guest@email.com">
 										<span class="uk-form-icon" uk-icon="icon: mail"></span>
 										{input email class=>"uk-input uk-form"}
 									</div>
 								</div>
 
 								<div class="uk-margin">
-									<div class="uk-inline uk-width-1-1">
+									<div class="uk-inline uk-width-1-1" uk-tooltip="guest">
 										<span class="uk-form-icon" uk-icon="icon: lock"></span>
 										{input password class=>"uk-input uk-form"}
 									</div>
 								</div>
+
+								<p class="uk-text-meta uk-alert">email: <code style="user-select: all; -webkit-user-select: all;">guest@email.com</code><br>password: <code style="user-select: all; -webkit-user-select: all;">guest</code></p>
 
 								<div class="uk-margin">
 									{input send class => 'uk-button uk-button-primary uk-button-large uk-width-1-1'}

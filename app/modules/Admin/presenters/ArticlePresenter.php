@@ -67,6 +67,7 @@ final class ArticlePresenter extends BasePresenter
             $this->template->articleMedia = $this->articleRepository->findArticleImages($id)->fetchAll();
             $this->template->id = $id;
         } else {
+            $this->isDemo();
             $data = [];
             $data['date'] = new DateTime();
             $data['visible'] = 1;
@@ -80,6 +81,7 @@ final class ArticlePresenter extends BasePresenter
 
 	public function actionDelete(int $id)
     {
+        $this->isDemo();
         $row = $this->articleRepository->findAll()->get($id);
         $translation = $this->articleRepository->findArticleTranslation($this->defaultLocale, $id)->fetch();
         // $photos = $this->articleRepository->findAllImages()->where('article_id', $id);
@@ -113,6 +115,7 @@ final class ArticlePresenter extends BasePresenter
 
 	public function actionDeleteImage(int $id)
 	{
+        $this->isDemo();
 		$row = $this->articleRepository->findAllImages()->get($id);
 
 		if (!$row) {
@@ -130,6 +133,7 @@ final class ArticlePresenter extends BasePresenter
 
 	public function actionShow(int $id, bool $visible)
     {
+        $this->isDemo();
         $this->articleRepository->findAll()->where('id', $id)->update(['visible' => $visible]);
     }
 
@@ -184,6 +188,7 @@ final class ArticlePresenter extends BasePresenter
 
 	public function articleFormSucceeded(Form $form, $values)
     {
+        $this->isDemo();
         $id = (int) $this->getParameter('id');
 
         // Insert primary record

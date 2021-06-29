@@ -67,6 +67,8 @@ final class PagePresenter extends BasePresenter
             $this->template->dir = $this->pages->uploadDir;
             $this->template->image = $row['image'];
             // $this->template->gallery = $this->pages->findAllImages()->where('page_id', $id)->fetchAll();
+        } else {
+            $this->isDemo();
         }
 
         $this->template->id = $id;
@@ -77,6 +79,7 @@ final class PagePresenter extends BasePresenter
 
 	public function actionDelete(int $id)
     {
+        $this->isDemo();
         $row = $this->pages->findAll()->get($id);
         $translations = $this->pages->findPageTranslations($id);
         $photos = $this->pages->findAllImages()->where('page_id', $id);
@@ -106,6 +109,7 @@ final class PagePresenter extends BasePresenter
 
 	public function actionDeletePhoto(int $id)
 	{
+        $this->isDemo();
 		$row = $this->pages->findAllImages()->get($id);
 
 		if (!$row) {
@@ -121,6 +125,7 @@ final class PagePresenter extends BasePresenter
 
 	public function actionUpdateSort(string $items = null)
 	{
+        $this->isDemo();
 		foreach(explode(',', $items) as $n => $row){
 			$this->pages->findAll()->wherePrimary($row)->update(array('order'=>$n));
 		}
@@ -129,6 +134,7 @@ final class PagePresenter extends BasePresenter
 
 	public function handleShow(int $id, bool $visible)
     {
+        $this->isDemo();
         $this->pages->findAll()->where('id', $id)->update(['visible' => !$visible]);
     }
 
@@ -201,6 +207,7 @@ final class PagePresenter extends BasePresenter
 
 	public function pageFormSucceeded(Form $form, $values)
     {
+        $this->isDemo();
         $id = (int) $this->getParameter('id');
         $parentPage = $this->pages->findAll()->where('id', $values->parent_id)->fetch();
 
@@ -209,7 +216,7 @@ final class PagePresenter extends BasePresenter
 
         $primaryData['level'] = $parentPage ? $parentPage->level + 1 : 0;
 
-        
+
         if( empty( trim($values->{'title_' . $this->defaultLocale})) ) { // default language title is not set
             foreach ($this->localeList as $lang) {
                 if ( trim($values->{'title_' . $lang}) ) {

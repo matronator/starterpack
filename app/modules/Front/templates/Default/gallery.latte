@@ -1,0 +1,27 @@
+{define bodyClass}page--home{/define}
+{define pageTitle}Gallery{/define}
+{define metaDescription}Gallery{/define}
+
+{block pageContent}
+
+<article class="container mx-auto">
+    <div class="container-sm" n:if="$galleryMedia != []">
+        <hr>
+        <h2 class="sub-1">{$gallery->title}</h2>
+        <div class="grid grid-flow-col">
+            <div class="col-span-1" n:foreach="$galleryMedia as $item">
+                {capture $filePath}{$basePath}/upload/gallery/{$gallery->htaccess}/{$item->filename}{/capture}
+                <a href="{$filePath}">
+                    <img src="{$filePath|imageGenerator: true, 300, 300}">
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4">
+        {* <a href="<?php echo article_adjacent_url('next'); ?>">&lt; Další</a> *}
+        <a n:href="default" title="Back to homepage">&larr; Back</a>
+        {* <a href="<?php echo article_adjacent_url('prev'); ?>">Předchozí &gt;</a> *}
+    </div>
+</article>
+
+{/block}

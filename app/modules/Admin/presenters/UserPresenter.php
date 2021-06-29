@@ -52,11 +52,16 @@ final class UserPresenter extends BasePresenter
 		$form = $this['userForm'];
 		$this->template->id = $id;
 		if ($id) {
+			if ($id === 1) {
+				$this->isDemo();
+			}
 			$user = $this->userRepository->findAll()->get($id);
 			if (!$user) {
 				$this->error('Entry not found!');
 			}
 			$form->setDefaults($user);
+		} else {
+			$this->isDemo();
 		}
 	}
 
@@ -64,6 +69,7 @@ final class UserPresenter extends BasePresenter
 
 	public function actionDelete(int $id)
 	{
+		$this->isDemo();
 		$user = $this->userRepository->findAll()->get($id);
 		if (!$user) {
 			$this->flashMessage('Entry not found!');
@@ -119,6 +125,8 @@ final class UserPresenter extends BasePresenter
 
 	public function userFormSucceeded(Form $form, $values)
 	{
+		$this->isDemo();
+
 		$id = (int) $this->getParameter('id');
 
 		if ($id) {

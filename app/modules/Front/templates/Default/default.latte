@@ -5,6 +5,27 @@
 {block pageContent}
 <h1 class="mb-12 text-center">Homepage</h1>
 
+<h2 class="sub-1">Galleries</h2>
+<hr>
+
+{foreach $galleries as $gallery}
+    <div class="container-sm mx-auto mb-2 text-left">
+        <h2 class="text-lg">
+            <a class="hover:text-gray-700 text-gray-800" n:href="gallery, $gallery->id, $gallery->htaccess" title="{$gallery->title}">{$gallery->title}</a>
+        </h2>
+        {capture $mainImage}{$basePath}/upload/gallery/{$gallery->htaccess}/{$gallery->image}{/capture}
+        <div class="bg-gray-500">
+            <a n:href="gallery, $gallery->id, $gallery->htaccess" class="">
+                <img src="{$mainImage|imageGenerator: true, 640, 480}" class="article-thumb" alt="{$gallery->title}">
+            </a>
+        </div>
+        <p><a n:href="gallery, $gallery->id, $gallery->htaccess" class="">View gallery &rarr;</a></p>
+    </div>
+{/foreach}
+
+<h2 class="sub-1">Articles</h2>
+<hr>
+
 <article n:foreach="$articles as $item" class="container-sm mx-auto text-left">
     <div class="mb-2 text-center bg-gray-500">
         <a n:href="detail, $item->article->id, $item->htaccess">

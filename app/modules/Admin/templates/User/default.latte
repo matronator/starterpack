@@ -6,6 +6,9 @@
     <a class="uk-button uk-button-primary" n:href="edit" n:if="$presenter->isAllowed('create')">
         Vytvořit uživatele
     </a>
+    <button class="uk-button uk-button-primary" disabled href="#" n:if="!$presenter->isAllowed('create')">
+        Vytvořit uživatele
+    </button>
 
     {if count($data) < 1}
         <div class="uk-placeholder">Zatím tu nic není 😶</div>
@@ -20,7 +23,7 @@
             </tr>
             </thead>
             <tbody n:inner-foreach="$data as $id => $row">
-            <tr>
+            <tr n:if="($user->role === 'a' || $row->role !== 'a')">
                 <td class="uk-table-link uk-link-reset uk-text-bold">
                     <a n:href="edit $id">{$row->email}</a>
                 </td>

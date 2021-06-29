@@ -7,12 +7,11 @@
 <article class="container mx-auto">
     <div class="flex flex-col items-center justify-center">
         <div class="container-md">
-            <h1>{$article->title}</h1>
-            <hr>
             {ifset $article->article->image_top}
                 {capture $imageTop}{$basePath}/upload/articles/{$article->htaccess}/{$article->article->image_top}{/capture}
                 <img src="{$imageTop}">
             {/ifset}
+            <h1>{$article->title}</h1>
             <div class="mx-auto prose">
                 {$presenter->youtubeIframe($article->text)|noescape}
             </div>

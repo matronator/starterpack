@@ -62,6 +62,7 @@ final class GalleryPresenter extends BasePresenter
 			$this->template->galleryMedia = $this->galleryRepository->findGalleryImages($id)->fetchAll();
 			$form->setDefaults($defaults);
 		} else {
+			$this->isDemo();
 			$this->template->galleryMedia = [];
 			$defaults = [];
 			$defaults['date'] = new DateTime();
@@ -73,6 +74,7 @@ final class GalleryPresenter extends BasePresenter
 	// =========== ACTIONS ===========
 	public function actionDelete(int $id)
 	{
+		$this->isDemo();
 		$row = $this->galleryRepository->findAll()->get($id);
 		if (!$row) {
 			$this->flashMessage('Záznam nenalezen!', 'warning');
@@ -92,6 +94,7 @@ final class GalleryPresenter extends BasePresenter
 
 	public function actionDeleteImage(int $id)
 	{
+		$this->isDemo();
 		$row = $this->galleryRepository->findAllImages()->get($id);
 
 		if (!$row) {
@@ -141,6 +144,7 @@ final class GalleryPresenter extends BasePresenter
 
 	public function galleryFormSucceeded(Form $form, $values)
     {
+		$this->isDemo();
 		$id = (int) $this->getParameter('id');
 
         // Insert primary record
