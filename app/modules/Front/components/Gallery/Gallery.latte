@@ -1,0 +1,22 @@
+{**
+ *    $galleryMedia         array
+ *    $gallery              object
+**}
+<div class="gallery" id="{$gallery->id}">
+    {foreach $galleryMedia as $item}
+        {capture $filePath}{$basePath}/upload/gallery/{$gallery->htaccess}/{$item->filename}{/capture}
+        <a href="#"
+            class="gallery-image"
+            data-image-src="{$filePath}"
+            data-image-index="{$iterator}"
+            data-image-title="{$item->description}"
+            data-toggle="modal"
+            data-target="#galleryModal-{$gallery->id}"
+        >
+            <img class="img-thumbnail" src="{$filePath|imageGenerator: true, 300, 300}">
+        </a>
+    {/foreach}
+
+    {include 'Lightbox.latte', id => $gallery->id}
+
+</div>
