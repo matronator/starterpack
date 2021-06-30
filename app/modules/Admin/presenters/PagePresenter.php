@@ -68,7 +68,7 @@ final class PagePresenter extends BasePresenter
             $this->template->image = $row['image'];
             // $this->template->gallery = $this->pages->findAllImages()->where('page_id', $id)->fetchAll();
         } else {
-            $this->isDemo();
+
         }
 
         $this->template->id = $id;
@@ -79,7 +79,7 @@ final class PagePresenter extends BasePresenter
 
 	public function actionDelete(int $id)
     {
-        $this->isDemo();
+
         $row = $this->pages->findAll()->get($id);
         $translations = $this->pages->findPageTranslations($id);
         $photos = $this->pages->findAllImages()->where('page_id', $id);
@@ -109,7 +109,7 @@ final class PagePresenter extends BasePresenter
 
 	public function actionDeletePhoto(int $id)
 	{
-        $this->isDemo();
+
 		$row = $this->pages->findAllImages()->get($id);
 
 		if (!$row) {
@@ -125,7 +125,7 @@ final class PagePresenter extends BasePresenter
 
 	public function actionUpdateSort(string $items = null)
 	{
-        $this->isDemo();
+
 		foreach(explode(',', $items) as $n => $row){
 			$this->pages->findAll()->wherePrimary($row)->update(array('order'=>$n));
 		}
@@ -134,7 +134,7 @@ final class PagePresenter extends BasePresenter
 
 	public function handleShow(int $id, bool $visible)
     {
-        $this->isDemo();
+
         $this->pages->findAll()->where('id', $id)->update(['visible' => !$visible]);
     }
 
@@ -207,7 +207,7 @@ final class PagePresenter extends BasePresenter
 
 	public function pageFormSucceeded(Form $form, $values)
     {
-        $this->isDemo();
+
         $id = (int) $this->getParameter('id');
         $parentPage = $this->pages->findAll()->where('id', $values->parent_id)->fetch();
 

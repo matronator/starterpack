@@ -45,12 +45,4 @@ class BasePresenter extends \App\BaseModule\Presenters\BasePresenter
         $this->user->logout();
         $this->redirect('Sign:in');
     }
-
-    public function isDemo()
-    {
-        if (!$this->isAllowed('create') || !$this->isAllowed('update') || !$this->isAllowed('delete')) {
-            $this->flashMessage('Can\'t modify or delete data. Nothing changed.', 'warning');
-            $this->redirect('default');
-        }
-    }
 }

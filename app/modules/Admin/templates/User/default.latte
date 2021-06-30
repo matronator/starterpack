@@ -6,9 +6,6 @@
     <a class="uk-button uk-button-primary" n:href="edit" n:if="$presenter->isAllowed('create')">
         Vytvořit uživatele
     </a>
-    <button class="uk-button uk-button-primary" disabled href="#" n:if="!$presenter->isAllowed('create')">
-        Vytvořit uživatele
-    </button>
 
     {if count($data) < 1}
         <div class="uk-placeholder">Zatím tu nic není 😶</div>

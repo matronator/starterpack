@@ -67,7 +67,7 @@ final class ArticlePresenter extends BasePresenter
             $this->template->articleMedia = $this->articleRepository->findArticleImages($id)->fetchAll();
             $this->template->id = $id;
         } else {
-            $this->isDemo();
+
             $data = [];
             $data['date'] = new DateTime();
             $data['visible'] = 1;
@@ -81,7 +81,7 @@ final class ArticlePresenter extends BasePresenter
 
 	public function actionDelete(int $id)
     {
-        $this->isDemo();
+
         $row = $this->articleRepository->findAll()->get($id);
         $translation = $this->articleRepository->findArticleTranslation($this->defaultLocale, $id)->fetch();
         // $photos = $this->articleRepository->findAllImages()->where('article_id', $id);
@@ -115,7 +115,7 @@ final class ArticlePresenter extends BasePresenter
 
 	public function actionDeleteImage(int $id)
 	{
-        $this->isDemo();
+
 		$row = $this->articleRepository->findAllImages()->get($id);
 
 		if (!$row) {
@@ -133,7 +133,7 @@ final class ArticlePresenter extends BasePresenter
 
 	public function actionShow(int $id, bool $visible)
     {
-        $this->isDemo();
+
         $this->articleRepository->findAll()->where('id', $id)->update(['visible' => $visible]);
     }
 
@@ -188,7 +188,6 @@ final class ArticlePresenter extends BasePresenter
 
 	public function articleFormSucceeded(Form $form, $values)
     {
-        $this->isDemo();
         $id = (int) $this->getParameter('id');
 
         // Insert primary record
@@ -248,6 +247,32 @@ final class ArticlePresenter extends BasePresenter
             // $this->articleRepository->findAllTags()->where('article_id', $id)->delete();
             $this->flashMessage('Záznam byl úspěšně upraven.');
             $articleId = $id;
+
+            // Insert translations
+            foreach ( array($this->defaultLocale) as $lang ) {
+                $this->articleRepository->findAllTranslations()->insert([
+                    'article_id' => $articleId,
+                    'locale' => $lang,
+                    'title' => $values->title,
+                    'perex' => $values->perex,
+                    'text' => $values->text,
+                    'date_created' => $primaryData['date_created'],
+                    'date_updated' => new DateTime()
+                ]);
+
+                // Insert tags
+                // $tags = explode(',', $values->{'tags_'.$lang});
+                // foreach ($tags as $tag) {
+                //     if ($tag)
+                //         $this->articleRepository->findAllTags()->insert([
+                //             'article_id' => $articleId,
+                //             'locale' => $lang,
+                //             'title' => trim($tag),
+                //             'htaccess' => Strings::webalize($tag),
+                //             'date_updated' => new DateTime()
+                //         ]);
+                // }
+            }
         } else {
             $primaryData['date_created'] = new DateTime();
             $primaryData['image_top'] = isset($imageTopInsert) ? $imageTopInsert : NULL;
@@ -259,35 +284,34 @@ final class ArticlePresenter extends BasePresenter
             $this->articleRepository->saveArticleGallery($savedPhotos, $articleId);
 
             $this->flashMessage('Záznam byl úspěšně přidán.');
+
+            // Insert translations
+            foreach ( array($this->defaultLocale) as $lang ) {
+                $this->articleRepository->findAllTranslations()->insert([
+                    'article_id' => $articleId,
+                    'locale' => $lang,
+                    'title' => $values->title,
+                    'perex' => $values->perex,
+                    'text' => $values->text,
+                    'htaccess' => $htaccess,
+                    'date_created' => $primaryData['date_created'],
+                    'date_updated' => new DateTime()
+                ]);
+
+                // Insert tags
+                // $tags = explode(',', $values->{'tags_'.$lang});
+                // foreach ($tags as $tag) {
+                //     if ($tag)
+                //         $this->articleRepository->findAllTags()->insert([
+                //             'article_id' => $articleId,
+                //             'locale' => $lang,
+                //             'title' => trim($tag),
+                //             'htaccess' => Strings::webalize($tag),
+                //             'date_updated' => new DateTime()
+                //         ]);
+                // }
+            }
         }
-
-        // Insert translations
-        foreach ( array($this->defaultLocale) as $lang ) {
-            $this->articleRepository->findAllTranslations()->insert([
-                'article_id' => $articleId,
-                'locale' => $lang,
-                'title' => $values->title,
-                'perex' => $values->perex,
-                'text' => $values->text,
-                'htaccess' => $htaccess,
-                'date_created' => $primaryData['date_created'],
-                'date_updated' => new DateTime()
-            ]);
-
-            // Insert tags
-            // $tags = explode(',', $values->{'tags_'.$lang});
-            // foreach ($tags as $tag) {
-            //     if ($tag)
-            //         $this->articleRepository->findAllTags()->insert([
-            //             'article_id' => $articleId,
-            //             'locale' => $lang,
-            //             'title' => trim($tag),
-            //             'htaccess' => Strings::webalize($tag),
-            //             'date_updated' => new DateTime()
-            //         ]);
-            // }
-        }
-
 
         // Redirect
         $this->redirect('default');
